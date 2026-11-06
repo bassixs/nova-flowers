@@ -101,31 +101,89 @@ export function HowTo() {
 
 /* ---------------- О мастерской ---------------- */
 export function About() {
+  const ref = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (prefersReducedMotion()) return;
+    const ctx = gsap.context(() => {
+      const q = ref.current!.querySelector('.about__quote')!;
+      // слова «проявляются» по мере чтения, фото-вставки раскрываются между ними
+      gsap.fromTo(
+        '.about__quote .aw',
+        { opacity: 0.14 },
+        { opacity: 1, stagger: 0.1, ease: 'none', scrollTrigger: { trigger: q, start: 'top 82%', end: 'bottom 45%', scrub: 0.4 } },
+      );
+      gsap.fromTo(
+        '.about__quote .pill',
+        { width: 0, opacity: 0 },
+        { width: '2.3em', opacity: 1, stagger: 0.25, ease: 'power2.out', scrollTrigger: { trigger: q, start: 'top 78%', end: 'bottom 50%', scrub: 0.6 } },
+      );
+      // коллаж: фото движутся с разной скоростью
+      const sc = { trigger: '.about__collage', start: 'top bottom', end: 'bottom top', scrub: true };
+      gsap.fromTo('.about__main img', { yPercent: -8 }, { yPercent: 8, ease: 'none', scrollTrigger: sc });
+      // разноскоростной параллакс — только на широких экранах, где фото не стоят друг под другом
+      gsap.matchMedia().add('(min-width: 901px)', () => {
+        gsap.fromTo('.about__side', { y: 80 }, { y: -80, ease: 'none', scrollTrigger: sc });
+        gsap.fromTo('.about__accent', { y: 140, rotate: -6 }, { y: -120, rotate: 4, ease: 'none', scrollTrigger: sc });
+      });
+    }, ref);
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <section id="about" className="about section" tabIndex={-1} aria-labelledby="about-title">
-      <div className="wrap about__grid">
-        <figure className="about__main" data-reveal="clip">
-          <img src={img(about.images.main, 1600)} srcSet={srcSet(about.images.main)} sizes="(max-width: 900px) 92vw, 42vw" alt="Флорист собирает букет" loading="lazy" data-parallax="0.1" />
-        </figure>
-        <div className="about__body">
-          <p className="kicker" data-reveal="fade">
-            {about.kicker}
-          </p>
-          <h2 id="about-title" className="about__quote" data-reveal="lines">
-            {about.quote}
-          </h2>
-          <p className="about__text" data-reveal="fade">
-            {about.text}
-          </p>
-          <ul className="about__points" data-reveal="fade">
-            {about.points.map((p) => (
-              <li key={p}>{p}</li>
-            ))}
-          </ul>
+    <section id="about" ref={ref} className="about section" tabIndex={-1} aria-labelledby="about-title">
+      <div className="wrap">
+        <p className="kicker" data-reveal="fade">
+          {about.kicker}
+        </p>
+        <h2 id="about-title" className="about__quote">
+          {about.quote.map((part, i) =>
+            typeof part === 'string' ? (
+              <span key={i}>
+                {part.split(' ').map((w, j) => (
+                  <span key={j} className="aw">
+                    {w}{' '}
+                  </span>
+                ))}
+              </span>
+            ) : (
+              <span key={i} className="pill" aria-hidden="true">
+                <img src={img(part.img)} alt="" loading="lazy" />
+              </span>
+            ),
+          )}
+        </h2>
+
+        <div className="about__collage">
+          <figure className="about__main" data-reveal="clip">
+            <img src={img(about.images.main, 1600)} srcSet={srcSet(about.images.main)} sizes="(max-width: 900px) 92vw, 55vw" alt="Флорист собирает букет" loading="lazy" />
+            <figcaption>Ручная сборка — без поролона и шаблонов</figcaption>
+          </figure>
+          <figure className="about__side">
+            <img src={img(about.images.side)} srcSet={srcSet(about.images.side)} sizes="(max-width: 900px) 46vw, 24vw" alt="Флорист оформляет композицию" loading="lazy" />
+          </figure>
+          <figure className="about__accent">
+            <img src={img(about.images.accent)} alt="Раскрытый пион крупным планом" loading="lazy" />
+          </figure>
+
+          <div className="about__body">
+            <p className="about__text" data-reveal="fade">
+              {about.text}
+            </p>
+            <p className="about__sign" data-reveal="fade">
+              — {about.signature}
+            </p>
+          </div>
         </div>
-        <figure className="about__detail" data-reveal="clip">
-          <img src={img(about.images.detail)} alt="Раскрытый пион крупным планом" loading="lazy" />
-        </figure>
+
+        <ul className="about__stats">
+          {about.stats.map((s, i) => (
+            <li key={s.label} data-reveal="fade" style={{ ['--d' as string]: i * 0.1 + 's' }}>
+              <b>{s.value}</b>
+              <span>{s.label}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );
