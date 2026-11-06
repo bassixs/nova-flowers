@@ -3,16 +3,20 @@
  * поэтому смена бренда = правка этого файла.
  */
 export const palette = {
-  milk: '#F7F2EB',
-  cream: '#EFE5D8',
-  sand: '#E2D3C1',
+  // тёплая нейтральная шкала — бумага и крафт
+  milk: '#F7F4EE', // фон страницы
+  cream: '#EFE9DF', // приподнятая поверхность
+  sand: '#E4DACB', // крафт: бирки, открытка
+  paper: '#FDFBF7', // карточки
   powder: '#EBCBC4',
   rose: '#C7807C',
-  roseDeep: '#9E4F55',
-  green: '#1F3A2D',
+  roseDeep: '#8E4A50',
+  // единственный акцент интерфейса
+  green: '#2F4A3A',
   greenSoft: '#3E5A48',
-  ink: '#1C1A17',
-  inkSoft: '#5B544B',
+  ink: '#1F1B16',
+  inkSoft: '#5E554A',
+  muted: '#7B7266',
 } as const;
 
 export function applyTheme(root: HTMLElement = document.documentElement) {
@@ -20,6 +24,8 @@ export function applyTheme(root: HTMLElement = document.documentElement) {
     '--c-milk': palette.milk,
     '--c-cream': palette.cream,
     '--c-sand': palette.sand,
+    '--c-paper': palette.paper,
+    '--c-muted': palette.muted,
     '--c-powder': palette.powder,
     '--c-rose': palette.rose,
     '--c-rose-deep': palette.roseDeep,

@@ -11,7 +11,9 @@
   --c-green-soft: #3e5a48;
   --c-ink: #1c1a17;
   --c-ink-soft: #5b544b;
-  --c-line: color-mix(in srgb, var(--c-ink) 14%, transparent);
+  --c-paper: #fdfbf7;
+  --c-muted: #7b7266;
+  --c-line: color-mix(in srgb, var(--c-ink) 10%, transparent);
 
   --f-serif: 'Cormorant Garamond', 'Times New Roman', serif;
   --f-sans: 'Manrope Variable', 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -49,7 +51,7 @@ body {
   font-family: var(--f-sans);
   font-size: 16px;
   line-height: 1.6;
-  font-weight: 420;
+  font-weight: 400;
   -webkit-font-smoothing: antialiased;
   overflow-x: clip;
   text-rendering: optimizeLegibility;
@@ -107,7 +109,7 @@ em {
 }
 
 :focus-visible {
-  outline: 2px solid var(--c-rose-deep);
+  outline: 2px solid var(--c-green);
   outline-offset: 3px;
   border-radius: 2px;
 }
@@ -153,38 +155,20 @@ em {
 /* ---------- типографика ---------- */
 .display {
   font-family: var(--f-serif);
-  font-weight: 300;
-  font-size: clamp(44px, 7.2vw, 112px);
-  line-height: 0.95;
+  font-weight: 400;
+  font-size: clamp(40px, 5vw, 72px);
+  line-height: 1.04;
   letter-spacing: -0.02em;
 }
 .display em {
-  font-weight: 300;
-  color: var(--c-rose-deep);
-}
-.display--light {
-  color: var(--c-milk);
-}
-.display--light em {
-  color: var(--c-powder);
+  font-style: normal;
 }
 
 .kicker {
-  font-size: 13px;
-  font-weight: 560;
-  letter-spacing: 0.02em;
-  color: var(--c-ink-soft);
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-.kicker::before {
-  content: '';
-  width: 28px;
-  height: 1px;
-  background: currentColor;
-  opacity: 0.6;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--c-muted);
+  margin-bottom: 16px;
 }
 
 /* построчные маски заголовков */
@@ -227,67 +211,46 @@ em {
 
 /* ---------- кнопки ---------- */
 .btn {
-  --bg: var(--c-green);
-  --fg: var(--c-milk);
-  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  min-height: 52px;
-  padding: 0 30px;
-  border-radius: 999px;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: 8px;
+  border: 1px solid transparent;
   font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  overflow: hidden;
-  isolation: isolate;
-  transition: color 0.5s var(--ease), border-color 0.5s var(--ease), transform 0.3s var(--ease);
+  font-weight: 500;
   white-space: nowrap;
-}
-.btn::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  background: var(--c-rose-deep);
-  transform: translateY(101%);
-  transition: transform 0.55s var(--ease);
-}
-.btn:hover::before,
-.btn:focus-visible::before {
-  transform: translateY(0);
+  transition: background-color 160ms var(--ease), color 160ms var(--ease), border-color 160ms var(--ease), transform 120ms var(--ease);
 }
 .btn:active {
-  transform: scale(0.97);
-}
-.btn span {
-  position: relative;
+  transform: scale(0.98);
 }
 .btn--solid {
-  background: var(--bg);
-  color: var(--fg);
+  background: var(--c-green);
+  color: #fff;
+}
+.btn--solid:hover,
+.btn--solid:focus-visible {
+  background: #253c2f;
 }
 .btn--line {
-  border: 1px solid color-mix(in srgb, var(--c-ink) 40%, transparent);
+  border-color: color-mix(in srgb, var(--c-ink) 18%, transparent);
   color: var(--c-ink);
-}
-.btn--line::before {
-  background: var(--c-ink);
+  background: transparent;
 }
 .btn--line:hover,
 .btn--line:focus-visible {
-  color: var(--c-milk);
-  border-color: var(--c-ink);
+  background: var(--c-cream);
+  border-color: color-mix(in srgb, var(--c-ink) 28%, transparent);
 }
 .btn--light {
-  background: var(--c-milk);
+  background: var(--c-paper);
   color: var(--c-ink);
 }
-.btn--light:hover,
-.btn--light:focus-visible {
-  color: var(--c-milk);
+.btn--light:hover {
+  background: var(--c-cream);
 }
 .btn--wide {
   flex: 1;
@@ -299,9 +262,9 @@ em {
 }
 
 .round {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
   border: 1px solid var(--c-line);
   font-size: 18px;
   transition: background 0.4s var(--ease), color 0.4s var(--ease), border-color 0.4s;
@@ -322,9 +285,8 @@ em {
 .demo-badge {
   display: inline-block;
   padding: 7px 12px;
-  border: 1px dashed color-mix(in srgb, var(--c-ink) 30%, transparent);
-  border-radius: 6px;
-  margin-top: 28px;
+  margin-top: 16px;
+  padding: 0;
 }
 
 /* ---------- reduced motion ---------- */
