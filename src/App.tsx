@@ -14,6 +14,7 @@ function Page() {
       <a className="skip" href="#collection">
         Перейти к каталогу
       </a>
+      <div className="progress" aria-hidden="true" />
       <Header />
       <main>
         <Hero />

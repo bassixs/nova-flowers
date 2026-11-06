@@ -1194,3 +1194,20 @@ html.no-motion .hero__shade {
     flex-direction: column;
   }
 }
+
+/* полоса прогресса прокрутки */
+.progress {
+  position: fixed;
+  z-index: 41;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: var(--c-green);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  pointer-events: none;
+}
+html.no-motion .progress {
+  display: none;
+}

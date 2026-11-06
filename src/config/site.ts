@@ -5,7 +5,7 @@
 export const site = {
   brand: 'FLEURÉ',
   brandTagline: 'Цветочная мастерская',
-  city: 'Москва',
+  city: 'Калуга',
   currency: '₽',
   locale: 'ru-RU',
 
