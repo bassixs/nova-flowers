@@ -3,7 +3,7 @@ import { Hero } from './components/Hero';
 import { Collection } from './components/Collection';
 import { BouquetModal } from './components/BouquetModal';
 import { Cart, Toasts } from './components/Cart';
-import { Delivery, Finale, Footer, Moments, Philosophy, Process, Reviews } from './components/Sections';
+import { About, Delivery, Faq, Finale, Footer, HowTo, Moments, Reviews } from './components/Sections';
 import { StoreProvider } from './store';
 import { useRevealSystem } from './hooks/useRevealSystem';
 
@@ -18,11 +18,12 @@ function Page() {
       <main>
         <Hero />
         <Collection />
-        <Philosophy />
         <Moments />
-        <Process />
+        <HowTo />
+        <About />
         <Delivery />
         <Reviews />
+        <Faq />
         <Finale />
       </main>
       <Footer />

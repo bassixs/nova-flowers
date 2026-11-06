@@ -1,140 +1,97 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { bloom, hero } from '../config/content';
+import { facts, hero } from '../config/content';
 import { site } from '../config/site';
-import { createPeonyRenderer } from '../bloom/peony';
-import { createSequenceRenderer } from '../bloom/sequence';
-import type { BloomRenderer } from '../bloom/types';
-import { BASE, img, prefersReducedMotion, scrollToHash } from '../lib';
+import { img, prefersReducedMotion, scrollToHash, srcSet } from '../lib';
 
 gsap.registerPlugin(ScrollTrigger);
 
-type Mode = 'cinematic' | 'static' | 'fallback';
-
 /**
- * HERO: закреплённая (pinned) сцена, прогресс прокрутки которой управляет
- * раскрытием цветка на Canvas. Текст — отдельные DOM-слои с собственным таймлайном.
+ * Первый экран — название салона как «окно»: фото видно только внутри букв.
+ * SVG-маска: молочная вуаль с вырезанными буквами поверх полноэкранного фото.
+ * При прокрутке буквы увеличиваются (пролёт сквозь букву), вуаль растворяется,
+ * на раскрытом фото проявляется заголовок. Название берётся из site.brand.
  */
 export function Hero() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [mode, setMode] = useState<Mode>(() => (prefersReducedMotion() ? 'static' : 'cinematic'));
+  const ref = useRef<HTMLElement>(null);
+  const textRef = useRef<SVGTextElement>(null);
+  const [box, setBox] = useState({ w: 1440, h: 860 });
+  const letters = [...site.brand];
+
+  // геометрия надписи под размер экрана
+  const { w, h } = box;
+  const portrait = h > w * 1.1;
+  const tl = w * (portrait ? 0.92 : 0.9);
+  // на узких экранах буквы вытягиваются по вертикали (condensed), чтобы название оставалось крупным
+  const fs = Math.min((tl / letters.length) * 1.55 * (portrait ? 1.6 : 1), h * (portrait ? 0.26 : 0.42));
+  const capH = fs * 0.66;
+  // блок «название + описание» центрируется по высоте; сверху запас под акцент É и шапку
+  const top = portrait ? 160 : Math.max(150, (h - capH - 320) / 2 + 40);
+  const baseline = top + capH;
+
+  useLayoutEffect(() => {
+    const el = ref.current!;
+    const ro = new ResizeObserver(() => {
+      const r = el.getBoundingClientRect();
+      // игнорируем мелкие изменения высоты (адресная строка мобильных браузеров)
+      setBox((b) => (Math.abs(b.w - r.width) < 1 && Math.abs(b.h - r.height) < 120 ? b : { w: r.width, h: r.height }));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   useEffect(() => {
-    const section = sectionRef.current!;
-    const canvas = canvasRef.current!;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      setMode('fallback');
-      return;
-    }
-    const reduced = prefersReducedMotion();
-    let renderer: BloomRenderer;
-    try {
-      renderer =
-        bloom.mode === 'sequence'
-          ? createSequenceRenderer({ base: BASE, ...bloom.sequence })
-          : createPeonyRenderer();
-    } catch {
-      setMode('fallback');
-      return;
-    }
+    if (prefersReducedMotion()) return;
+    const el = ref.current!;
+    const text = textRef.current!;
 
-    let w = 0, h = 0, dpr = 1;
-    let target = reduced ? 1 : 0;
-    let current = target;
-    let visible = true;
-    let raf = 0;
-    let last = 0;
-    let dirty = true;
-    let isReady = false;
-    const t0 = performance.now();
-
-    const resize = () => {
-      const r = canvas.getBoundingClientRect();
-      const nw = Math.round(r.width), nh = Math.round(r.height);
-      if (nw === w && Math.abs(nh - h) < 2) return;
-      w = nw;
-      h = nh;
-      dpr = Math.min(window.devicePixelRatio || 1, w < 700 ? 2 : 1.6);
-      canvas.width = Math.round(w * dpr);
-      canvas.height = Math.round(h * dpr);
-      dirty = true;
+    // точка «пролёта» — внутри штриха второй буквы
+    const origin = () => {
+      try {
+        const c = text.getExtentOfChar(Math.min(1, letters.length - 1));
+        return `${c.x + c.width * 0.22} ${c.y + c.height * 0.62}`;
+      } catch {
+        return `${w / 2} ${baseline - capH / 2}`;
+      }
     };
 
-    const frame = (now: number) => {
-      raf = requestAnimationFrame(frame);
-      if (!visible || !isReady) return;
-      const diff = target - current;
-      current = Math.abs(diff) < 0.0004 ? target : current + diff * 0.14;
-      const moving = current !== target;
-      // idle-«дыхание»: ~30 fps, во время прокрутки — каждый кадр
-      const idle = renderer.animated && !reduced && now - last > 33;
-      if (!dirty && !moving && !idle) return;
-      last = now;
-      dirty = false;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      renderer.draw(ctx, w, h, current, reduced ? 0 : (now - t0) / 1000);
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({
+        defaults: { ease: 'none' },
+        scrollTrigger: {
+          trigger: el,
+          start: 'top top',
+          end: () => `+=${window.innerHeight * 1.4}`,
+          pin: true,
+          scrub: 0.5,
+          invalidateOnRefresh: true,
+        },
+      });
+      tl.to('.hero__info', { opacity: 0, y: -40, duration: 0.25 }, 0)
+        .fromTo(text, { scale: 1 }, { scale: 26, svgOrigin: origin(), duration: 0.75, ease: 'power2.in' }, 0.08)
+        .to('.hero__veil', { opacity: 0, duration: 0.3 }, 0.5)
+        .fromTo('.hero__photo img', { scale: 1.18 }, { scale: 1, duration: 0.9 }, 0)
+        .fromTo('.hero__shade', { opacity: 0 }, { opacity: 1, duration: 0.25 }, 0.6)
+        .fromTo('.hero__tline', { y: 0, yPercent: 110 }, { y: 0, yPercent: 0, duration: 0.2, stagger: 0.07, ease: 'power2.out' }, 0.68)
+        .to({}, { duration: 0.08 });
+    }, el);
+
+    // лёгкий параллакс фото внутри букв за курсором
+    const onMove = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse') return;
+      const x = (e.clientX / window.innerWidth - 0.5) * 2;
+      const y = (e.clientY / window.innerHeight - 0.5) * 2;
+      el.style.setProperty('--mx', `${x * -14}px`);
+      el.style.setProperty('--my', `${y * -10}px`);
     };
-
-    renderer.ready
-      .then(() => {
-        isReady = true;
-        dirty = true;
-        section.classList.add('is-ready');
-      })
-      .catch(() => setMode('fallback'));
-
-    const ro = new ResizeObserver(resize);
-    ro.observe(canvas);
-    resize();
-    raf = requestAnimationFrame(frame);
-
-    const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting), { rootMargin: '100px' });
-    io.observe(section);
-
-    let gctx: gsap.Context | undefined;
-    if (!reduced) {
-      gctx = gsap.context(() => {
-        const tl = gsap.timeline({
-          defaults: { ease: 'none' },
-          scrollTrigger: {
-            trigger: section,
-            start: 'top top',
-            end: () => `+=${window.innerHeight * bloom.scrollLength}`,
-            pin: true,
-            scrub: 0.4,
-            anticipatePin: 1,
-            invalidateOnRefresh: true,
-            onUpdate: (self) => {
-              target = self.progress;
-            },
-          },
-        });
-        // 0–15%: вступительная фраза и индикатор уходят
-        tl.to('.hero__intro', { opacity: 0, y: -40, filter: 'blur(6px)', duration: 0.12 }, 0.02)
-          .to('.hero__scroll', { opacity: 0, duration: 0.06 }, 0.02)
-          .to('.hero__meta', { opacity: 0, duration: 0.1 }, 0.05)
-          // 45–75%: главный заголовок построчно
-          .fromTo('.hero__line', { y: 0, yPercent: 110, opacity: 0 }, { y: 0, yPercent: 0, opacity: 1, duration: 0.16, stagger: 0.08, ease: 'power2.out' }, 0.46)
-          .fromTo('.hero__title', { filter: 'blur(10px)' }, { filter: 'blur(0px)', duration: 0.24 }, 0.46)
-          // 75–100%: подзаголовок и кнопки
-          .fromTo('.hero__sub', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.1 }, 0.76)
-          .fromTo('.hero__ctas', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.1 }, 0.8)
-          .fromTo('.hero__ctas', { pointerEvents: 'none' }, { pointerEvents: 'auto', duration: 0.01 }, 0.8)
-          .to({}, { duration: 0.1 }, 0.9);
-      }, section);
-    }
-
+    el.addEventListener('pointermove', onMove);
     return () => {
-      cancelAnimationFrame(raf);
-      ro.disconnect();
-      io.disconnect();
-      gctx?.revert();
-      renderer.dispose?.();
+      el.removeEventListener('pointermove', onMove);
+      ctx.revert();
     };
-  }, []);
+    // пересоздаём сцену при смене геометрии надписи
+  }, [w, h]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const go = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
@@ -142,49 +99,78 @@ export function Hero() {
   };
 
   return (
-    <section ref={sectionRef} id="top" className={`hero hero--${mode}`} aria-label="Вступление" tabIndex={-1}>
-      {mode === 'fallback' && (
-        <img className="hero__poster" src={img(hero.staticImage, 1600)} alt="" aria-hidden="true" />
-      )}
-      <canvas ref={canvasRef} className="hero__canvas" aria-hidden="true" />
-
-      <div className="hero__meta">
-        <span>{hero.eyebrow}</span>
-        <span>{site.city}</span>
+    <section ref={ref} id="top" className="hero" aria-labelledby="hero-title" tabIndex={-1}>
+      <div className="hero__photo" aria-hidden="true">
+        <img src={img(hero.image, 1600)} srcSet={srcSet(hero.image)} sizes="100vw" alt="" {...{ fetchpriority: 'high' }} />
       </div>
+      <div className="hero__shade" aria-hidden="true" />
 
-      <p className="hero__intro">
-        {hero.intro.split('\n').map((l, i) => (
-          <span key={i}>{l}</span>
-        ))}
-      </p>
+      <svg className="hero__svg" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <mask id="hero-mask" maskUnits="userSpaceOnUse" x="0" y="0" width={w} height={h}>
+            <rect width={w} height={h} fill="#fff" />
+            <text
+              ref={textRef}
+              className="hero__word"
+              x={w / 2}
+              y={baseline}
+              textAnchor="middle"
+              fontSize={fs}
+              textLength={tl}
+              lengthAdjust="spacingAndGlyphs"
+              fill="#000"
+            >
+              {letters.map((l, i) => (
+                <tspan key={i} style={{ animationDelay: `${0.15 + i * 0.09}s` }}>
+                  {l}
+                </tspan>
+              ))}
+            </text>
+          </mask>
+        </defs>
+        <rect className="hero__veil" width={w} height={h} mask="url(#hero-mask)" />
+      </svg>
 
-      <div className="hero__copy">
-        <h1 className="hero__title">
-          <span className="hero__mask">
-            <span className="hero__line">{hero.titleLines[0]}</span>
-          </span>
-          <span className="hero__mask hero__mask--shift">
-            <span className="hero__line">
-              <em>{hero.titleLines[1]}</em>
-            </span>
-          </span>
-        </h1>
-        <p className="hero__sub">{hero.subtitle}</p>
-        <div className="hero__ctas">
-          <a className="btn btn--solid" href={hero.primaryCta.href} onClick={(e) => go(e, hero.primaryCta.href)}>
-            <span>{hero.primaryCta.label}</span>
-          </a>
-          <a className="btn btn--line" href={hero.secondaryCta.href} onClick={(e) => go(e, hero.secondaryCta.href)}>
-            <span>{hero.secondaryCta.label}</span>
-          </a>
+      <h1 id="hero-title" className="sr-only">
+        {site.brand} — {hero.lead.toLowerCase()}
+      </h1>
+
+      <div className="hero__info" style={{ ['--base' as string]: `${baseline}px` }}>
+        <div className="hero__meta">
+          <span>{hero.eyebrow}</span>
+          <span>{site.city}</span>
+        </div>
+        <div className="hero__below">
+          <div className="hero__text">
+            <p className="hero__lead">{hero.lead}</p>
+            <p className="hero__sub">{hero.sub}</p>
+            <div className="hero__ctas">
+              <a className="btn btn--solid" href={hero.primaryCta.href} onClick={(e) => go(e, hero.primaryCta.href)}>
+                <span>{hero.primaryCta.label}</span>
+              </a>
+              <a className="btn btn--line" href={hero.secondaryCta.href} onClick={(e) => go(e, hero.secondaryCta.href)}>
+                <span>{hero.secondaryCta.label}</span>
+              </a>
+            </div>
+          </div>
+          <ul className="facts">
+            {facts.map((f) => (
+              <li key={f.label}>
+                <b>{f.value}</b>
+                <span>{f.label}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 
-      <div className="hero__scroll" aria-hidden="true">
-        <span>Прокрутите, чтобы раскрыть</span>
-        <i />
-      </div>
+      <p className="hero__title" aria-hidden="true">
+        {hero.title.map((t, i) => (
+          <span key={i} className="hero__tmask">
+            <span className="hero__tline">{i === 1 ? <em>{t}</em> : t}</span>
+          </span>
+        ))}
+      </p>
     </section>
   );
 }

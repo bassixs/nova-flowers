@@ -135,18 +135,6 @@ export const bouquets: Bouquet[] = [
     image: 'bridal',
   },
   {
-    id: 'ranunculus',
-    name: 'Пастель',
-    short: 'Ранункулюсы',
-    description:
-      'Многослойные ранункулюсы в пастельной палитре — лёгкий и необычный подарок без повода.',
-    composition: ['Ранункулюс', 'Ранункулюс Cloni', 'Бумажная упаковка'],
-    price: 5900,
-    type: 'author',
-    occasions: ['nooccasion', 'love'],
-    image: 'ranunculus',
-  },
-  {
     id: 'mini',
     name: 'Комплимент',
     short: 'Мини-букет',

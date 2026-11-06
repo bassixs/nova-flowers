@@ -33,12 +33,12 @@ export const site = {
   ],
 
   nav: [
-    { href: '#collection', label: 'Букеты' },
-    { href: '#philosophy', label: 'Философия' },
+    { href: '#collection', label: 'Каталог' },
     { href: '#moments', label: 'Поводы' },
-    { href: '#process', label: 'Мастерская' },
+    { href: '#how', label: 'Как заказать' },
     { href: '#delivery', label: 'Доставка' },
     { href: '#reviews', label: 'Отзывы' },
+    { href: '#faq', label: 'Вопросы' },
   ],
 
   /** Демо-режим: формы не отправляют реальных заказов. */

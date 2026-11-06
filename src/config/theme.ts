@@ -15,16 +15,6 @@ export const palette = {
   inkSoft: '#5B544B',
 } as const;
 
-/** Цвета процедурного пиона в hero (если используется procedural-режим). */
-export const bloomColors = {
-  petalBase: [160, 48, 78], // глубокий розовый у основания лепестка
-  petalMid: [226, 140, 156],
-  petalTip: [250, 226, 224], // светлая пудровая кромка
-  sepal: [58, 86, 62],
-  stem: [62, 92, 64],
-  stamen: [222, 176, 92],
-} as const;
-
 export function applyTheme(root: HTMLElement = document.documentElement) {
   const map: Record<string, string> = {
     '--c-milk': palette.milk,

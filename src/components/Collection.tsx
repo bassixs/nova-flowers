@@ -34,13 +34,12 @@ export function Collection() {
     <section id="collection" className="collection section" tabIndex={-1} aria-labelledby="collection-title">
       <div className="wrap">
         <header className="collection__head">
-          <p className="kicker" data-reveal="fade">Коллекция сезона</p>
+          <p className="kicker" data-reveal="fade">Каталог</p>
           <h2 id="collection-title" className="display" data-reveal="lines">
-            Букеты, которые <em>говорят</em> за&nbsp;вас
+            Букеты <em>сезона</em>
           </h2>
           <p className="collection__lead" data-reveal="fade">
-            Собираем в день доставки из цветов последней поставки. Цена указана за размер M — в карточке можно выбрать
-            камерный или щедрый вариант.
+            Цена — за размер M, как на фото. Нажмите на букет, чтобы посмотреть состав и выбрать размер S или L.
           </p>
         </header>
 
@@ -77,13 +76,13 @@ export function Collection() {
           </div>
         ) : (
           <ul className="grid" ref={gridRef}>
-            {list.map((b, i) => (
-              <li key={b.id} className={`card card--${i % 6}`}>
+            {list.map((b) => (
+              <li key={b.id} className="card">
                 <button type="button" className="card__media" onClick={() => openBouquet(b.id)} aria-label={`Подробнее о букете «${b.name}»`}>
                   <img
                     src={img(b.image)}
                     srcSet={srcSet(b.image)}
-                    sizes="(max-width: 700px) 92vw, 45vw"
+                    sizes="(max-width: 560px) 92vw, (max-width: 900px) 46vw, 30vw"
                     alt={`Букет «${b.name}» — ${b.short.toLowerCase()}`}
                     loading="lazy"
                     decoding="async"
@@ -94,9 +93,6 @@ export function Collection() {
                   </span>
                 </button>
                 <div className="card__body">
-                  <span className="card__index" aria-hidden="true">
-                    {String(bouquets.indexOf(b) + 1).padStart(2, '0')}
-                  </span>
                   <h3 className="card__name">{b.name}</h3>
                   <p className="card__short">{b.short}</p>
                   <div className="card__row">
