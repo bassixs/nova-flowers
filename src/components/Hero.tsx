@@ -16,6 +16,10 @@ gsap.registerPlugin(ScrollTrigger);
 export function Hero() {
   const ref = useRef<HTMLElement>(null);
   const textRef = useRef<SVGTextElement>(null);
+  const zoomRef = useRef<SVGGElement>(null);
+  // естественная ширина надписи при размере fs; подгонка по ширине — через scale,
+  // а не textLength (его не поддерживают WebKit-браузеры iOS, включая встроенные в мессенджеры)
+  const [natW, setNatW] = useState(0);
   const [box, setBox] = useState({ w: 1440, h: 860 });
   const letters = [...site.brand];
 
@@ -29,6 +33,25 @@ export function Hero() {
   // блок «название + описание» центрируется по высоте; сверху запас под акцент É и шапку
   const top = portrait ? 160 : Math.max(150, (h - capH - 320) / 2 + 40);
   const baseline = top + capH;
+  const sx = natW ? tl / natW : 0;
+  const font = `500 ${fs}px "Cormorant Garamond"`;
+
+  useLayoutEffect(() => {
+    let alive = true;
+    const measure = () => {
+      const c = document.createElement('canvas').getContext('2d');
+      if (!c) return;
+      c.font = font;
+      const m = c.measureText(site.brand).width;
+      if (alive && m > 0) setNatW(m);
+    };
+    measure();
+    document.fonts?.load(font).then(measure).catch(() => undefined);
+    document.fonts?.ready.then(measure);
+    return () => {
+      alive = false;
+    };
+  }, [font]);
 
   useLayoutEffect(() => {
     const el = ref.current!;
@@ -42,17 +65,19 @@ export function Hero() {
   }, []);
 
   useEffect(() => {
-    if (prefersReducedMotion()) return;
+    if (prefersReducedMotion() || !sx) return;
     const el = ref.current!;
     const text = textRef.current!;
+    const zoom = zoomRef.current!;
 
-    // точка «пролёта» — внутри штриха второй буквы
+    // точка «пролёта» — внутри штриха второй буквы (в координатах всего SVG)
     const origin = () => {
       try {
         const c = text.getExtentOfChar(Math.min(1, letters.length - 1));
-        return `${c.x + c.width * 0.22} ${c.y + c.height * 0.62}`;
+        if (!c.width) throw new Error('no extent');
+        return `${w / 2 + (c.x + c.width * 0.22) * sx} ${baseline + c.y + c.height * 0.62}`;
       } catch {
-        return `${w / 2} ${baseline - capH / 2}`;
+        return `${w / 2 - tl * 0.33} ${baseline - capH * 0.4}`;
       }
     };
 
@@ -69,7 +94,7 @@ export function Hero() {
         },
       });
       tl.to('.hero__info', { opacity: 0, y: -40, duration: 0.25 }, 0)
-        .fromTo(text, { scale: 1 }, { scale: 26, svgOrigin: origin(), duration: 0.75, ease: 'power2.in' }, 0.08)
+        .fromTo(zoom, { scale: 1 }, { scale: 26, svgOrigin: origin(), duration: 0.75, ease: 'power2.in' }, 0.08)
         .to('.hero__veil', { opacity: 0, duration: 0.3 }, 0.5)
         .fromTo('.hero__photo img', { scale: 1.18 }, { scale: 1, duration: 0.9 }, 0)
         .fromTo('.hero__shade', { opacity: 0 }, { opacity: 1, duration: 0.25 }, 0.6)
@@ -91,7 +116,7 @@ export function Hero() {
       ctx.revert();
     };
     // пересоздаём сцену при смене геометрии надписи
-  }, [w, h]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [w, h, sx]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const go = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
@@ -109,23 +134,17 @@ export function Hero() {
         <defs>
           <mask id="hero-mask" maskUnits="userSpaceOnUse" x="0" y="0" width={w} height={h}>
             <rect width={w} height={h} fill="#fff" />
-            <text
-              ref={textRef}
-              className="hero__word"
-              x={w / 2}
-              y={baseline}
-              textAnchor="middle"
-              fontSize={fs}
-              textLength={tl}
-              lengthAdjust="spacingAndGlyphs"
-              fill="#000"
-            >
-              {letters.map((l, i) => (
-                <tspan key={i} style={{ animationDelay: `${0.15 + i * 0.09}s` }}>
-                  {l}
-                </tspan>
-              ))}
-            </text>
+            <g ref={zoomRef}>
+              <g transform={`translate(${w / 2} ${baseline}) scale(${sx || 1} 1)`} opacity={sx ? 1 : 0}>
+                <text ref={textRef} className="hero__word" x="0" y="0" textAnchor="middle" fontSize={fs} fill="#000">
+                  {letters.map((l, i) => (
+                    <tspan key={i} style={{ animationDelay: `${0.15 + i * 0.09}s` }}>
+                      {l}
+                    </tspan>
+                  ))}
+                </text>
+              </g>
+            </g>
           </mask>
         </defs>
         <rect className="hero__veil" width={w} height={h} mask="url(#hero-mask)" />
