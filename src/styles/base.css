@@ -1,0 +1,340 @@
+/* ============ ДИЗАЙН-СИСТЕМА ============ */
+:root {
+  /* палитра переопределяется из src/config/theme.ts */
+  --c-milk: #f7f2eb;
+  --c-cream: #efe5d8;
+  --c-sand: #e2d3c1;
+  --c-powder: #ebcbc4;
+  --c-rose: #c7807c;
+  --c-rose-deep: #9e4f55;
+  --c-green: #1f3a2d;
+  --c-green-soft: #3e5a48;
+  --c-ink: #1c1a17;
+  --c-ink-soft: #5b544b;
+  --c-line: color-mix(in srgb, var(--c-ink) 14%, transparent);
+
+  --f-serif: 'Cormorant Garamond', 'Times New Roman', serif;
+  --f-sans: 'Manrope Variable', 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --gutter: clamp(16px, 4vw, 56px);
+  --maxw: 1440px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-io: cubic-bezier(0.65, 0, 0.35, 1);
+  --header-h: 68px;
+  --sbw: 0px;
+
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: var(--header-h);
+}
+html.is-locked {
+  overflow: hidden;
+  padding-right: var(--sbw);
+}
+
+body {
+  margin: 0;
+  background: var(--c-milk);
+  color: var(--c-ink);
+  font-family: var(--f-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 420;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+  text-rendering: optimizeLegibility;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+button {
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+figure,
+blockquote,
+dl,
+dd {
+  margin: 0;
+}
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+em {
+  font-style: italic;
+}
+[hidden] {
+  display: none !important;
+}
+
+:focus-visible {
+  outline: 2px solid var(--c-rose-deep);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip {
+  position: fixed;
+  left: 16px;
+  top: -60px;
+  z-index: 100;
+  padding: 10px 16px;
+  background: var(--c-green);
+  color: var(--c-milk);
+  transition: top 0.2s;
+}
+.skip:focus {
+  top: 12px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.section {
+  padding: clamp(88px, 13vw, 180px) 0;
+  outline: none;
+}
+
+/* ---------- типографика ---------- */
+.display {
+  font-family: var(--f-serif);
+  font-weight: 300;
+  font-size: clamp(44px, 7.2vw, 112px);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+}
+.display em {
+  font-weight: 300;
+  color: var(--c-rose-deep);
+}
+.display--light {
+  color: var(--c-milk);
+}
+.display--light em {
+  color: var(--c-powder);
+}
+
+.kicker {
+  font-size: 13px;
+  font-weight: 560;
+  letter-spacing: 0.02em;
+  color: var(--c-ink-soft);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.kicker::before {
+  content: '';
+  width: 28px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.6;
+}
+
+/* построчные маски заголовков */
+.lmask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+.lmask .rl {
+  display: inline-block;
+}
+.w {
+  display: inline;
+}
+
+/* ---------- ссылки ---------- */
+.link {
+  position: relative;
+  display: inline-block;
+}
+.link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.5s var(--ease);
+}
+.link:hover::after,
+.link:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* ---------- кнопки ---------- */
+.btn {
+  --bg: var(--c-green);
+  --fg: var(--c-milk);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 30px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  overflow: hidden;
+  isolation: isolate;
+  transition: color 0.5s var(--ease), border-color 0.5s var(--ease), transform 0.3s var(--ease);
+  white-space: nowrap;
+}
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--c-rose-deep);
+  transform: translateY(101%);
+  transition: transform 0.55s var(--ease);
+}
+.btn:hover::before,
+.btn:focus-visible::before {
+  transform: translateY(0);
+}
+.btn:active {
+  transform: scale(0.97);
+}
+.btn span {
+  position: relative;
+}
+.btn--solid {
+  background: var(--bg);
+  color: var(--fg);
+}
+.btn--line {
+  border: 1px solid color-mix(in srgb, var(--c-ink) 40%, transparent);
+  color: var(--c-ink);
+}
+.btn--line::before {
+  background: var(--c-ink);
+}
+.btn--line:hover,
+.btn--line:focus-visible {
+  color: var(--c-milk);
+  border-color: var(--c-ink);
+}
+.btn--light {
+  background: var(--c-milk);
+  color: var(--c-ink);
+}
+.btn--light:hover,
+.btn--light:focus-visible {
+  color: var(--c-milk);
+}
+.btn--wide {
+  flex: 1;
+  width: 100%;
+}
+.btn[disabled] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.round {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid var(--c-line);
+  font-size: 18px;
+  transition: background 0.4s var(--ease), color 0.4s var(--ease), border-color 0.4s;
+}
+.round:hover,
+.round:focus-visible {
+  background: var(--c-ink);
+  color: var(--c-milk);
+  border-color: var(--c-ink);
+}
+
+.demo-note,
+.demo-badge {
+  font-size: 12.5px;
+  color: var(--c-ink-soft);
+  line-height: 1.5;
+}
+.demo-badge {
+  display: inline-block;
+  padding: 7px 12px;
+  border: 1px dashed color-mix(in srgb, var(--c-ink) 30%, transparent);
+  border-radius: 6px;
+  margin-top: 28px;
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

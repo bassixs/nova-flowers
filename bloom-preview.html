@@ -1,0 +1,9 @@
+<!doctype html><html><body style="margin:0;background:#eee;display:flex;flex-wrap:wrap;gap:2px">
+<script type="module">
+const { createPeonyRenderer } = await import('/nova-flowers/src/bloom/peony.ts?t=' + Date.now());
+const q = new URLSearchParams(location.search);
+const r = createPeonyRenderer();
+const cols = +(q.get('c') || 3), ar = +(q.get('ar') || 0.56);
+const ps = (q.get('p') || '0,0.15,0.3,0.45,0.6,0.75,0.9,1,0.5').split(',').map(Number);
+for (const p of ps) { const c = document.createElement('canvas'); const w = Math.floor(innerWidth/cols-2), h = Math.floor(w*ar); c.width=w*2; c.height=h*2; c.style.width=w+'px'; c.style.height=h+'px'; document.body.append(c); const ctx=c.getContext('2d'); ctx.scale(2,2); r.draw(ctx,w,h,p,0); }
+</script></body></html>
