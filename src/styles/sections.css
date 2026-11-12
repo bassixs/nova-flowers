@@ -819,7 +819,7 @@ html.no-motion .hero__shade {
   font-size: 22px;
   line-height: 1.25;
 }
-.order__card span {
+.order__card .order__from {
   display: block;
   margin-top: 12px;
   text-align: right;
@@ -1114,36 +1114,6 @@ html.no-motion .hero__shade {
   }
 }
 
-/* ============ ФИНАЛ ============ */
-.finale {
-  padding: clamp(80px, 10vw, 128px) 0;
-  border-top: 1px solid var(--c-line);
-}
-.finale__inner {
-  display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-  gap: 32px 64px;
-  align-items: end;
-}
-.finale__inner .display {
-  max-width: 14ch;
-}
-.finale__side p {
-  font-size: 16px;
-  color: var(--c-ink-soft);
-}
-.finale__cta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 24px;
-}
-@media (max-width: 900px) {
-  .finale__inner {
-    grid-template-columns: 1fr;
-  }
-}
-
 /* ============ ПОДВАЛ ============ */
 .footer {
   padding: 64px 0 32px;
@@ -1210,4 +1180,382 @@ html.no-motion .hero__shade {
 }
 html.no-motion .progress {
   display: none;
+}
+
+/* ============ ВИТРИНА ============ */
+.lookbook {
+  --lp: 0;
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  min-height: 640px;
+  overflow: hidden;
+}
+.lookbook__grid {
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+  gap: 64px;
+  align-items: center;
+  padding-top: calc(var(--header-h) + 24px);
+  padding-bottom: 40px;
+}
+.lookbook__frame {
+  position: relative;
+  justify-self: end;
+  height: min(76svh, 760px);
+  aspect-ratio: 4 / 5;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--c-cream);
+}
+.lookbook__frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  clip-path: inset(100% 0% 0% 0%);
+  transform: scale(1.15);
+  transition: clip-path 1s var(--ease-io), transform 1.4s var(--ease);
+}
+.lookbook__frame img.is-past {
+  clip-path: inset(0% 0% 0% 0%);
+  transform: scale(1);
+}
+.lookbook__frame img.is-active {
+  z-index: 1;
+  clip-path: inset(0% 0% 0% 0%);
+  transform: scale(1);
+}
+.lookbook__top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--c-muted);
+}
+.lookbook__count {
+  font-variant-numeric: tabular-nums;
+}
+.lookbook__count b {
+  font-weight: 500;
+  color: var(--c-ink);
+}
+.lookbook__bar {
+  height: 1px;
+  margin-top: 12px;
+  background: var(--c-line);
+}
+.lookbook__bar i {
+  display: block;
+  height: 100%;
+  background: var(--c-ink);
+  transform: scaleX(var(--lp));
+  transform-origin: 0 50%;
+}
+.lookbook__name {
+  margin-top: 32px;
+  font-family: var(--f-serif);
+  font-weight: 400;
+  font-size: clamp(56px, 6.6vw, 112px);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+.lookbook__name span {
+  display: inline-block;
+  animation: letterUp 0.9s var(--ease) both;
+}
+@keyframes letterUp {
+  from {
+    opacity: 0;
+    transform: translateY(0.4em);
+  }
+}
+.lookbook__body {
+  animation: bodyIn 0.7s 0.15s var(--ease) both;
+}
+@keyframes bodyIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+.lookbook__short {
+  margin-top: 20px;
+  font-size: 16px;
+  font-weight: 500;
+}
+.lookbook__desc {
+  margin-top: 8px;
+  font-size: 16px;
+  color: var(--c-ink-soft);
+  max-width: 44ch;
+}
+.lookbook__comp {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--c-muted);
+}
+.lookbook__buy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 28px;
+}
+@media (max-width: 900px) {
+  .lookbook__grid {
+    grid-template-columns: 1fr;
+    align-content: start;
+    gap: 16px;
+    padding-top: calc(var(--header-h) + 12px);
+  }
+  .lookbook__frame {
+    width: 100%;
+    height: 44svh;
+    aspect-ratio: auto;
+  }
+  .lookbook__name {
+    margin-top: 16px;
+    font-size: clamp(40px, 11vw, 56px);
+  }
+  .lookbook__desc,
+  .lookbook__comp {
+    display: none;
+  }
+  .lookbook__short {
+    margin-top: 8px;
+  }
+  .lookbook__buy {
+    margin-top: 16px;
+  }
+}
+html.no-motion .lookbook {
+  height: auto;
+  min-height: 0;
+}
+
+/* ============ БЕГУЩИЕ СТРОКИ ============ */
+.marquee {
+  overflow: hidden;
+  padding: clamp(24px, 4vw, 56px) 0;
+}
+.marquee__track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+}
+.marquee__half {
+  display: flex;
+  flex-shrink: 0;
+}
+.marquee__item {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--f-serif);
+  font-weight: 500;
+  font-size: clamp(64px, 11vw, 190px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.marquee__dot {
+  margin: 0 0.3em;
+  color: var(--c-rose);
+  font-weight: 400;
+}
+.marquee--photo .marquee__word {
+  background-size: cover;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.marquee--line .marquee__word {
+  color: transparent;
+  -webkit-text-stroke: 1px var(--c-ink);
+}
+
+/* ============ ПОВОДЫ: тёмная сцена и фото за курсором ============ */
+.moments {
+  background: var(--c-green);
+  color: var(--c-milk);
+  border-top: 0;
+}
+html.motion .moments {
+  background: transparent;
+}
+.moments .display {
+  color: var(--c-milk);
+}
+.moments .sec-head__lead {
+  color: color-mix(in srgb, var(--c-milk) 72%, transparent);
+}
+.moments .occ,
+.moments .occ__row {
+  border-color: color-mix(in srgb, var(--c-milk) 16%, transparent);
+}
+.moments .occ__row:hover,
+.moments .occ__row:focus-visible {
+  background: color-mix(in srgb, var(--c-milk) 6%, transparent);
+}
+.moments .occ__note {
+  color: color-mix(in srgb, var(--c-milk) 70%, transparent);
+}
+.moments .occ__n {
+  color: color-mix(in srgb, var(--c-milk) 55%, transparent);
+}
+.moments .occ__arrow {
+  stroke: var(--c-milk);
+}
+.moments :focus-visible {
+  outline-color: var(--c-powder);
+}
+.occ-wrap {
+  position: relative;
+}
+.occ-float {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  top: 0;
+  width: 220px;
+  aspect-ratio: 3 / 4;
+  margin: -300px 0 0 32px;
+  overflow: hidden;
+  border-radius: 4px;
+  pointer-events: none;
+  opacity: 0;
+  clip-path: inset(50% 50% 50% 50%);
+  transition: clip-path 0.5s var(--ease), opacity 0.3s var(--ease);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.25);
+}
+.occ-float.is-on {
+  opacity: 1;
+  clip-path: inset(0% 0% 0% 0%);
+}
+.occ-float img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.1);
+  transition: opacity 0.35s var(--ease), transform 0.8s var(--ease);
+}
+.occ-float img.is-active {
+  opacity: 1;
+  transform: scale(1);
+}
+.occ__thumb {
+  display: none;
+}
+@media (hover: none), (pointer: coarse) {
+  .occ-float {
+    display: none;
+  }
+  .occ__row {
+    grid-template-columns: 56px minmax(0, 1fr) auto;
+    gap: 4px 16px;
+    padding: 16px 4px;
+  }
+  .occ__thumb {
+    display: block;
+    grid-row: 1 / span 2;
+    width: 56px;
+    height: 72px;
+    overflow: hidden;
+    border-radius: 4px;
+  }
+  .occ__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .occ__title {
+    grid-column: 2;
+    font-size: 26px;
+  }
+  .occ__note {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .occ__n {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
+  .occ__arrow {
+    display: none;
+  }
+}
+
+/* ============ КАК ЗАКАЗАТЬ: шаги подсвечиваются, открытка пишется ============ */
+html.motion .how,
+html.motion .reviews {
+  background: transparent;
+}
+html.motion .step {
+  opacity: 0.38;
+  transition: opacity 0.4s var(--ease);
+}
+html.motion .step.is-on {
+  opacity: 1;
+}
+.step.is-on .steps__n {
+  color: var(--c-green);
+}
+
+/* ============ ФИНАЛ: обратный пролёт в название ============ */
+.finale-scene {
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  min-height: 560px;
+  overflow: hidden;
+  background: var(--c-milk);
+}
+.finale-scene__photo {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.finale-scene__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 40%;
+}
+.finale-scene__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.finale-scene__veil {
+  fill: var(--c-milk);
+}
+.finale-scene__copy {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 0 var(--gutter);
+  text-align: center;
+}
+.finale-scene__copy h2 {
+  font-family: var(--f-serif);
+  font-weight: 400;
+  font-size: clamp(28px, 3vw, 44px);
+  line-height: 1.1;
+}
+.finale-scene__cta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
 }

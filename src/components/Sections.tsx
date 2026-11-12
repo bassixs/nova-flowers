@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { gsap } from 'gsap';
 import { bouquets } from '../config/catalog';
-import { about, faq, finale, howTo, moments, orderExample, reviews } from '../config/content';
+import { about, faq, howTo, moments, orderExample, reviews } from '../config/content';
 import { delivery } from '../config/delivery';
 import { site } from '../config/site';
 import { img, money, plural, scrollToHash, srcSet } from '../lib';
@@ -12,9 +13,43 @@ const go = (href: string) => (e: React.MouseEvent) => {
   scrollToHash(href);
 };
 
-/* ---------------- Поводы: список строк ---------------- */
+/* ---------------- Поводы: список строк, фото следует за курсором ---------------- */
+function momentImages() {
+  const used = new Set<string>();
+  return moments.map((m) => {
+    const pick = bouquets.find((b) => b.occasions.includes(m.id) && !used.has(b.image)) ?? bouquets.find((b) => b.occasions.includes(m.id));
+    if (pick) used.add(pick.image);
+    return pick?.image ?? bouquets[0].image;
+  });
+}
+
 export function Moments() {
   const { setOccasion } = useStore();
+  const [active, setActive] = useState<number | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const floatRef = useRef<HTMLDivElement>(null);
+  const images = useMemo(momentImages, []);
+
+  useEffect(() => {
+    const list = listRef.current!;
+    const fl = floatRef.current!;
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    const xTo = gsap.quickTo(fl, 'x', { duration: 0.6, ease: 'power3.out' });
+    const yTo = gsap.quickTo(fl, 'y', { duration: 0.6, ease: 'power3.out' });
+    const rTo = gsap.quickTo(fl, 'rotation', { duration: 0.8, ease: 'power3.out' });
+    let lastX = 0;
+    const onMove = (e: PointerEvent) => {
+      const r = list.getBoundingClientRect();
+      const x = e.clientX - r.left;
+      xTo(x);
+      yTo(e.clientY - r.top);
+      rTo(Math.max(-12, Math.min(12, (x - lastX) * 0.6)));
+      lastX = x;
+    };
+    list.addEventListener('pointermove', onMove);
+    return () => list.removeEventListener('pointermove', onMove);
+  }, []);
+
   const pick = (id: (typeof moments)[number]['id']) => {
     setOccasion(id);
     scrollToHash('#collection');
@@ -28,12 +63,28 @@ export function Moments() {
           </h2>
           <p className="sec-head__lead">Выберите повод, и каталог покажет подходящие букеты</p>
         </header>
-        <ul className="occ">
-          {moments.map((m) => {
+        <div className="occ-wrap" ref={listRef} onPointerLeave={() => setActive(null)}>
+          <div ref={floatRef} className={`occ-float${active !== null ? ' is-on' : ''}`} aria-hidden="true">
+            {images.map((im, k) => (
+              <img key={k} src={img(im)} alt="" className={k === active ? 'is-active' : ''} loading="lazy" />
+            ))}
+          </div>
+          <ul className="occ">
+          {moments.map((m, k) => {
             const n = bouquets.filter((b) => b.occasions.includes(m.id)).length;
             return (
               <li key={m.id}>
-                <button type="button" className="occ__row" onClick={() => pick(m.id)}>
+                <button
+                  type="button"
+                  className="occ__row"
+                  onClick={() => pick(m.id)}
+                  onPointerEnter={() => setActive(k)}
+                  onFocus={() => setActive(k)}
+                  onBlur={() => setActive(null)}
+                >
+                  <span className="occ__thumb" aria-hidden="true">
+                    <img src={img(images[k])} alt="" loading="lazy" />
+                  </span>
                   <span className="occ__title">{m.title}</span>
                   <span className="occ__note">{m.note}</span>
                   <span className="occ__n">
@@ -46,7 +97,8 @@ export function Moments() {
               </li>
             );
           })}
-        </ul>
+          </ul>
+        </div>
       </div>
     </section>
   );
@@ -98,9 +150,15 @@ function OrderCard() {
         </div>
         <p className="order__photo">Фото готового букета пришлём до {orderExample.photoBy}</p>
       </div>
-      <div className="order__card" aria-label="Текст открытки">
-        <p>{orderExample.card}</p>
-        <span>— {orderExample.from}</span>
+      <div className="order__card">
+        <p aria-label={orderExample.card}>
+          {[...orderExample.card].map((ch, k) => (
+            <span key={k} className="ch" aria-hidden="true">
+              {ch}
+            </span>
+          ))}
+        </p>
+        <span className="order__from">— {orderExample.from}</span>
       </div>
     </figure>
   );
@@ -116,7 +174,7 @@ export function HowTo() {
           </h2>
           <ol className="steps">
             {howTo.map((s) => (
-              <li key={s.n}>
+              <li key={s.n} className="step">
                 <span className="steps__n">{s.n}</span>
                 <div>
                   <h3>{s.title}</h3>
@@ -274,32 +332,6 @@ export function Faq() {
             );
           })}
         </ul>
-      </div>
-    </section>
-  );
-}
-
-/* ---------------- Финал ---------------- */
-export function Finale() {
-  return (
-    <section className="finale" aria-labelledby="finale-title">
-      <div className="wrap finale__inner">
-        <h2 id="finale-title" className="display">
-          {finale.title}
-        </h2>
-        <div className="finale__side">
-          <p>
-            Звоните или пишите — поможем выбрать. {site.contacts.hours}
-          </p>
-          <div className="finale__cta">
-            <a className="btn btn--solid" href={finale.cta.href} onClick={go(finale.cta.href)}>
-              {finale.cta.label}
-            </a>
-            <a className="btn btn--line" href={site.contacts.phoneHref}>
-              {site.contacts.phone}
-            </a>
-          </div>
-        </div>
       </div>
     </section>
   );

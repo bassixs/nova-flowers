@@ -55,6 +55,8 @@ export function Hero() {
 
   useLayoutEffect(() => {
     const el = ref.current!;
+    const first = el.getBoundingClientRect();
+    setBox({ w: first.width, h: first.height });
     const ro = new ResizeObserver(() => {
       const r = el.getBoundingClientRect();
       // игнорируем мелкие изменения высоты (адресная строка мобильных браузеров)
@@ -91,6 +93,7 @@ export function Hero() {
           pin: true,
           scrub: 0.5,
           invalidateOnRefresh: true,
+          refreshPriority: 10,
         },
       });
       tl.to('.hero__info', { opacity: 0, y: -40, duration: 0.25 }, 0)
@@ -101,6 +104,9 @@ export function Hero() {
         .fromTo('.hero__tline', { y: 0, yPercent: 110 }, { y: 0, yPercent: 0, duration: 0.2, stagger: 0.07, ease: 'power2.out' }, 0.68)
         .to({}, { duration: 0.08 });
     }, el);
+    // сцена пересоздаётся после замера шрифта — пересчитываем позиции всех сцен ниже
+    ScrollTrigger.sort();
+    ScrollTrigger.refresh();
 
     // лёгкий параллакс фото внутри букв за курсором
     const onMove = (e: PointerEvent) => {

@@ -28,3 +28,11 @@ export const plural = (n: number, forms: [string, string, string]) => {
   if (n10 >= 2 && n10 <= 4 && (n100 < 10 || n100 >= 20)) return forms[1];
   return forms[2];
 };
+
+/** Ширина строки в px для заданного CSS-шрифта (нужна для подгонки SVG-надписей без textLength). */
+export function measureText(font: string, text: string) {
+  const c = document.createElement('canvas').getContext('2d');
+  if (!c) return 0;
+  c.font = font;
+  return c.measureText(text).width;
+}

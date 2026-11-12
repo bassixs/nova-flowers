@@ -70,8 +70,27 @@ export function useRevealSystem() {
         { clipPath: 'inset(0% 0% 0% 0%)', duration: 1.1, ease: 'expo.out', stagger: 0.09, scrollTrigger: once('.occ', 'top 80%') },
       );
 
-      // шаги заказа
-      gsap.fromTo('.steps li', { x: -24, opacity: 0 }, { x: 0, opacity: 1, duration: 0.8, ease, stagger: 0.12, scrollTrigger: once('.steps') });
+      // шаги заказа подсвечиваются по мере прокрутки раздела
+      const steps = gsap.utils.toArray<HTMLElement>('.steps .step');
+      ScrollTrigger.create({
+        trigger: '.how',
+        start: 'top 55%',
+        end: 'bottom 75%',
+        onUpdate: (self) => {
+          const k = Math.min(steps.length - 1, Math.floor(self.progress * steps.length));
+          steps.forEach((s, j) => s.classList.toggle('is-on', j <= k));
+        },
+        onLeaveBack: () => steps.forEach((s, j) => s.classList.toggle('is-on', j === 0)),
+      });
+      steps[0]?.classList.add('is-on');
+
+      // текст открытки «пишется» буква за буквой вместе с прокруткой
+      gsap.fromTo(
+        '.order__card .ch',
+        { opacity: 0 },
+        { opacity: 1, stagger: 0.04, ease: 'none', scrollTrigger: { trigger: '.order', start: 'top 40%', end: 'bottom 70%', scrub: 0.4 } },
+      );
+      gsap.fromTo('.order__from', { opacity: 0 }, { opacity: 1, ease: 'none', scrollTrigger: { trigger: '.order', start: 'bottom 75%', end: 'bottom 65%', scrub: 0.4 } });
 
       // открытка-заказ
       const order = document.querySelector('.order');
@@ -128,12 +147,32 @@ export function useRevealSystem() {
       gsap.fromTo('.rev li', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease, stagger: 0.12, scrollTrigger: once('.rev') });
       gsap.fromTo('.faq__list .qa', { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease, stagger: 0.07, scrollTrigger: once('.faq__list') });
 
-      // финал: заголовок медленно «доезжает» при прокрутке
-      gsap.fromTo(
-        '.finale .display',
-        { xPercent: -6 },
-        { xPercent: 0, ease: 'none', scrollTrigger: { trigger: '.finale', start: 'top bottom', end: 'center center', scrub: 0.6 } },
-      );
+      // фон страницы перетекает между разделами
+      const bg: [string, string][] = [
+        ['.lookbook', '#F7F4EE'],
+        ['#collection', '#F7F4EE'],
+        ['#moments', '#1F3A2D'],
+        ['#how', '#EBE1D2'],
+        ['#about', '#F7F4EE'],
+        ['#delivery', '#F7F4EE'],
+        ['#reviews', '#EFE9DF'],
+        ['#faq', '#F7F4EE'],
+        ['.finale-scene', '#F7F4EE'],
+      ];
+      const dark = (c: string) => c === '#1F3A2D';
+      bg.forEach(([sel, c]) => {
+        if (!document.querySelector(sel)) return;
+        ScrollTrigger.create({
+          trigger: sel,
+          start: 'top 60%',
+          end: 'bottom 60%',
+          onToggle: (self) => {
+            if (!self.isActive) return;
+            gsap.to(document.body, { backgroundColor: c, duration: 0.8, ease: 'power2.out', overwrite: 'auto' });
+            root.classList.toggle('is-dark', dark(c));
+          },
+        });
+      });
     });
 
     const refresh = () => ScrollTrigger.refresh();
@@ -141,6 +180,7 @@ export function useRevealSystem() {
     window.addEventListener('load', refresh);
     return () => {
       window.removeEventListener('load', refresh);
+      root.classList.remove('is-dark');
       ctx.revert();
     };
   }, []);
