@@ -49,7 +49,7 @@ export function Lookbook() {
               alt={k === i ? `Букет «${x.name}»` : ''}
               aria-hidden={k !== i}
               className={k === i ? 'is-active' : k < i ? 'is-past' : ''}
-              loading={k < 2 ? 'eager' : 'lazy'}
+              loading="eager"
             />
           ))}
         </div>
